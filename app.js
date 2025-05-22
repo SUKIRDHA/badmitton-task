@@ -22,6 +22,9 @@ app.post('/player',(req,res)=>{
     const playername=req.body.playername;
     const results=req.body.results;
     const Id=req.body.Id;
+    console.log(playername,results,Id);
+    console.log("Request body:", req.body);
+
     if(!playername || !results || !Id){
         return res.status(400).json({error:'Please provide all required fields'});
     }
@@ -38,18 +41,21 @@ app.post('/player',(req,res)=>{
     }
 )
 })
-app.get('/getdata/players', (req, res) => {
+app.get('/player/getdata', (req, res) => {
     const result = "SELECT * FROM players";
+
     con.query(result, function(error, result) {
         if (error) {
             console.log('error:', error);
             return res.status(500).json({ error: 'Database error' });
         }
+        console.log('result:', result);
         res.json(result)
+
     })
 }
 );
-app.put('/players/update', (req, res) => {
+app.put('/player/update', (req, res) => {
     const { playername, results, Id } = req.body;
     if (!playername || !results || !Id) {
         return res.status(400).json({ error: 'Please provide all required fields' });
@@ -67,7 +73,7 @@ app.put('/players/update', (req, res) => {
     });
 
 })
-app.delete('/players/delete', (req, res) => {
+app.delete('/player/delete', (req, res) => {
     const{ Id } = req.body;
     if (!Id) {
         return res.status(400).json({ error: 'Please provide all required fields' });

@@ -10,23 +10,141 @@
 
     <nav>
         <ul>
-           <a href="players.html">Players Management</a> 
-      <a href="match.html">Match Tracking</a>
- <a href="leaderboard.html">Leaderboard / Stats</a>
+           <a href="#section1">Players Management</a> 
+      <a href="#section2">Match Tracking</a>
+ <a href="#section3">Leaderboard / Stats</a>
         
 </ul>
     </nav>
 </header>
-<p>Badminton is a racquet sport played using racquets to hit a shuttlecock across a net. Although it may be played with larger teams, the most common forms of the game are "singles" (with one player per side) and "doubles" (with two players per side). Badminton is often played as a casual outdoor activity in a yard or on a beach; professional games are played on a rectangular indoor court. Points are scored by striking the shuttlecock with the racquet and landing it within the other team's half of the court, within the set boundaries.
 
-    Each side may only strike the shuttlecock once before it passes over the net. Play ends once the shuttlecock has struck the floor or ground, or if a fault has been called by the umpire, service judge, or (in their absence) the opposing side.
-  
-    The shuttlecock is a feathered or (in informal matches) plastic projectile that flies differently from the balls used in many other sports. In particular, the feathers create much higher drag, causing the shuttlecock to decelerate more rapidly. Shuttlecocks also have a high top speed compared to the balls in other racquet sports, making badminton the fastest racquet sport in the world. The flight of the shuttlecock gives the sport its distinctive nature, and in certain languages the sport is named by reference to this feature (e.g., German Federball, literally feather-ball).
-    
-    The game developed in British India from the earlier game of battledore and shuttlecock</p>
-    <img src="istockphoto-1761333789-612x612.jpg" alt="Badminton Image" style="width:50%; height: 370px;">
+<section id="section1">
+ 
+        
+    <h1>Players Management</h1>
 
-    </body>
-   
+    </header>
+    <input type="number" id="playerId" placeholder="Enter id of the player">
+    <input type="text" id="playerName" placeholder="Enter player name">
+    <select id="result">
+        <option value="" disabled>Select a result</option>
+        <option value="wins">win</option>
+        <option value="losses">loss</option>
+        </select>
+    <button id="addPlayer">Add Player</button>
+    <button id="removePlayer">Remove Player</button>
+    <h2>Players List</h2>
+    <ul id="playersList"></ul>
+</section>
+<section id="section2">
+    <h2>
+        Result of a match
+    </h2>
+    <input type="text" id="player1" placeholder="Enter Name of the Winner">
+    <input type="text" id="player2" placeholder="Enter Name of the Loser">
+    <button id="addresult">Add Result</button>
+</section>
+<section id="section3">
+    <h2>Number of Wins and losses per player</h2>
+    <table id="leaderboardTable" border="1">
+        <thead>
+            <tr>
+                <th>Player</th>
+                <th>Wins</th>
+                <th>Losses</th>
+            </tr>
+        </thead>
+        <tbody id="leaderboard">
+
+        </tbody>
+    </section>
 </body>
+ </section>
+<script>document.getElementById("addPlayer").addEventListener("click", function() {
+    const id = document.getElementById("playerId").value;
+    const playerName = document.getElementById("playerName").value;
+    const results= document.getElementById("result").value;
+    const details={
+        Id:id,
+        playername:playerName,
+        results:results
+    }
+    if (playerName && id) {
+        const playerList = document.getElementById("playersList");
+        const newPlayer = document.createElement("li");
+        newPlayer.textContent = `${id}   ${playerName}`;
+        playerList.appendChild(newPlayer);
+
+        document.getElementById("playerId").value = "";
+        document.getElementById("playerName").value = "";
+    } else {
+        alert("Please enter player id and name ");
+    }
+    fetch("http://localhost:5000/player",{
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+        body:JSON.stringify(details)
+        })
+        .then(response => {
+            if (response.ok) {
+                console.log("Player added successfully");
+        }
+        else{
+            console.error("Error adding player");
+        }     
+        })
+        fetch("http://localhost:5000/player/getdata",{
+            method:"GET",
+            headers:{
+                "Content-Type":"application/json"
+            },
+        body:JSON.stringify(details)
+        })
+        .then(respone=> {
+            if (response.ok) {
+                console.log("Player data retrieved successfully");
+        }
+        
+        else{
+            console.error("Error retrieving player data");
+        }     
+        })
+        fetch("http://localhost:5000/player/update",{
+            method:"PUT",
+            headers:{
+                "Content-Type":"application/json"
+            },
+        body:JSON.stringify(details)})
+        fetch("http://localhost:5000/player/delete",{
+            method:"DELETE",
+            headers:{
+                "Content-Type":"application/json"
+            },
+        body:JSON.stringify(details)})
+        let data = JSON.parse(localStorage.getItem("info")) || [];
+   data.push(details);
+    localStorage.setItem("info", JSON.stringify(data));
+    console.log("Data stored in JSON");
+    console.log(data);
+    console.log("Form submitted successfully!");
+})
+document.getElementById("removePlayer").addEventListener("click", function() {
+    const playerList = document.getElementById("playersList");
+    const playerName = document.getElementById("playerName").value;
+    const playerId = document.getElementById("playerId").value;
+    const players = playerList.getElementsByTagName("li");
+    let a = false;
+    for (let i = 0; i < players.length; i++) {
+        if (players[i].textContent.includes(playerName) && players[i].textContent.includes(playerId)) {            playerList.removeChild(players[i]);
+            a= true;
+            break;
+        }
+    }
+})
+
+    </script>
+        <script src="app.js"></script>
+
 </html>
