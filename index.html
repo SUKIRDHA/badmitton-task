@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<form id="matchForm"></form>
 <html lang="en">
     <head>
     <title>Badminton league</title>
@@ -23,14 +23,7 @@
         
     <h1>Players Management</h1>
 
-    </header>
-    <input type="number" id="playerId" placeholder="Enter id of the player">
     <input type="text" id="playerName" placeholder="Enter player name">
-    <select id="result">
-        <option value="" disabled>Select a result</option>
-        <option value="wins">win</option>
-        <option value="losses">loss</option>
-        </select>
     <button id="addPlayer">Add Player</button>
     <button id="removePlayer">Remove Player</button>
     <h2>Players List</h2>
@@ -40,10 +33,16 @@
     <h2>
         Result of a match
     </h2>
-    <input type="text" id="player1" placeholder="Enter Name of the Winner">
-    <input type="text" id="player2" placeholder="Enter Name of the Loser">
-    <button id="addresult">Add Result</button>
-</section>
+    <section id="section2">
+        <h2>Record a Match Result</h2>
+        <form id="matchForm">
+          <input type="text" id="playerAname" placeholder="Player A name" required />
+          <input type="text" id="playerBname" placeholder="Player B name" required />
+          <input type="text" id="winnerName" placeholder="Winner name" required />
+          <input type="date" id="matchDate" required />
+          <button type="submit">Submit Match</button>
+        </form>
+      </section>
 <section id="section3">
     <h2>Number of Wins and losses per player</h2>
     <table id="leaderboardTable" border="1">
@@ -57,94 +56,214 @@
         <tbody id="leaderboard">
 
         </tbody>
+        </table>
     </section>
 </body>
- </section>
 <script>document.getElementById("addPlayer").addEventListener("click", function() {
-    const id = document.getElementById("playerId").value;
     const playerName = document.getElementById("playerName").value;
-    const results= document.getElementById("result").value;
     const details={
-        Id:id,
-        playername:playerName,
-        results:results
+        playername: playerName,
     }
-    if (playerName && id) {
-        const playerList = document.getElementById("playersList");
-        const newPlayer = document.createElement("li");
-        newPlayer.textContent = `${id}   ${playerName}`;
-        playerList.appendChild(newPlayer);
 
-        document.getElementById("playerId").value = "";
-        document.getElementById("playerName").value = "";
-    } else {
-        alert("Please enter player id and name ");
+    
+    fetch("http://localhost:5000/player", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(details)
+    })
+    .then(response => {
+        if (!response.ok) 
+            throw new Error("Failed to add player");
+        return response.json();    
+    })
+    .then(() => {
+        return fetch("http://localhost:5000/getdata/player");
+    })
+    .then(response => {
+        if (!response.ok) 
+            throw new Error("Failed to fetch players");
+        return response.json();
+    })
+    .then(players => {
+        displayData(players);
+    })
+    .catch(error => {
+        console.error("Error:", error);
+    });
+
+    document.getElementById("playerName").value = "";
+})
+function displayData(players) {
+    const playerList = document.getElementById("playersList");
+    playerList.innerHTML = "";
+    players.forEach(player => {
+        const li = document.createElement("li");
+        li.textContent = ` Name: ${player.name}`;
+        playerList.appendChild(li);
+    });
+}
+document.getElementById("removePlayer").addEventListener("click", function() {
+    const playerList = document.getElementById("playersList");
+    const playerName = document.getElementById("playerName").value;
+    if (!playerName ) {
+        alert("Please enter player name to remove.");
+        return;
     }
-    fetch("http://localhost:5000/player",{
-            method:"POST",
-            headers:{
-                "Content-Type":"application/json"
-            },
-        body:JSON.stringify(details)
-        })
-        .then(response => {
-            if (response.ok) {
-                console.log("Player added successfully");
-        }
-        else{
-            console.error("Error adding player");
-        }     
-        })
-        fetch("http://localhost:5000/player/getdata",{
-            method:"GET",
-            headers:{
-                "Content-Type":"application/json"
-            },
-        body:JSON.stringify(details)
-        })
-        .then(respone=> {
-            if (response.ok) {
-                console.log("Player data retrieved successfully");
-        }
-        
-        else{
-            console.error("Error retrieving player data");
-        }     
-        })
-        fetch("http://localhost:5000/player/update",{
-            method:"PUT",
-            headers:{
-                "Content-Type":"application/json"
-            },
-        body:JSON.stringify(details)})
-        fetch("http://localhost:5000/player/delete",{
+    const details = {
+        playername: playerName,
+    };
+    fetch("http://localhost:5000/player/delete",{
             method:"DELETE",
             headers:{
                 "Content-Type":"application/json"
             },
         body:JSON.stringify(details)})
-        let data = JSON.parse(localStorage.getItem("info")) || [];
-   data.push(details);
-    localStorage.setItem("info", JSON.stringify(data));
-    console.log("Data stored in JSON");
-    console.log(data);
-    console.log("Form submitted successfully!");
-})
-document.getElementById("removePlayer").addEventListener("click", function() {
-    const playerList = document.getElementById("playersList");
-    const playerName = document.getElementById("playerName").value;
-    const playerId = document.getElementById("playerId").value;
-    const players = playerList.getElementsByTagName("li");
-    let a = false;
-    for (let i = 0; i < players.length; i++) {
-        if (players[i].textContent.includes(playerName) && players[i].textContent.includes(playerId)) {            playerList.removeChild(players[i]);
-            a= true;
-            break;
-        }
+
+.then(response => {
+    if (!response.ok) {
+    throw new Error("Failed to remove player");
     }
+        return response.json();
+    })
+    .then(data=>{
+        console.log(data);
+        return fetch("http://localhost:5000/getdata/player");
+    })
+    .then(res=>res.json())
+    .then(players=>{
+        displayData(players);
+    })
 })
+// Display players in list
+function displayData(players) {
+  const playerList = document.getElementById("playersList");
+  playerList.innerHTML = "";
+  players.forEach(player => {
+    const li = document.createElement("li");
+    li.textContent = `Name: ${player.name}`;
+    playerList.appendChild(li);
+  });
+}
+
+// Fetch and display all match results on page load and after recording a match
+function fetchAndDisplayMatches() {
+    fetch("http://localhost:5000/getdata/match")
+        .then(response => {
+            if (!response.ok) throw new Error("Failed to fetch match results");
+            return response.json();
+        })
+        .then(matches => {
+            let resultDiv = document.getElementById("matchResultDisplay");
+            if (!resultDiv) {
+                resultDiv = document.createElement("div");
+                resultDiv.id = "matchResultDisplay";
+                document.getElementById("section2").appendChild(resultDiv);
+            }
+            resultDiv.innerHTML = "<h3>Match Results</h3>";
+            matches.reverse().forEach(match => {
+                const matchInfo = document.createElement("div");
+                matchInfo.textContent = `Match: ${match.playerA} vs ${match.playerB} | Winner: ${match.winner} | Date: ${match.date}`;
+                resultDiv.appendChild(matchInfo);
+            });
+        })
+        .catch(error => {
+            console.error("Error:", error);
+        });
+}
+
+document.getElementById("matchForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const playerA = document.getElementById("playerAname").value;
+    const playerB = document.getElementById("playerBname").value;
+    const winner = document.getElementById("winnerName").value;
+    const matchDate = document.getElementById("matchDate").value;
+    console.log(matchDate)
+    const matchDetails = {
+        playerA: playerA,
+        playerB: playerB,
+        winner: winner,
+        date:matchDate
+    };
+
+    fetch("http://localhost:5000/match", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(matchDetails)
+    })
+    .then(response => {
+        if (!response.ok) throw new Error("Failed to record match");
+        return response.json();
+    })
+    .then(data => {
+        alert("Match recorded successfully!");
+        document.getElementById("matchForm").reset();
+        fetchAndDisplayMatches(); // Refresh match results after recording
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        alert("Error recording match.");
+    });
+});
+function fetchAndDisplayLeaderboard() {
+    fetch("http://localhost:5000/leaderboard")
+        .then(response => {
+            if (!response.ok) throw new Error("Failed to fetch leaderboard");
+            return response.json();
+        })
+        .then(data => {
+            const leaderboard = document.getElementById("leaderboard");
+            leaderboard.innerHTML = "";
+            data.forEach(player => {
+                const tr = document.createElement("tr");
+                const tdName = document.createElement("td");
+                tdName.textContent = player.player || player.name;
+                const tdWins = document.createElement("td");
+                tdWins.textContent = player.wins !== undefined ? player.wins : 0;
+                // If losses are not provided, calculate as: losses = matches played - wins
+                let losses = player.losses;
+                if ((losses === undefined || losses === null) && player.matches !== undefined && player.wins !== undefined) {
+                    losses = player.matches - player.wins;
+                }
+                if (losses === undefined || losses < 0) losses = 0;
+                const tdLosses = document.createElement("td");
+                tdLosses.textContent = losses;
+                tr.appendChild(tdName);
+                tr.appendChild(tdWins);
+                tr.appendChild(tdLosses);
+                leaderboard.appendChild(tr);
+            });
+        })
+        .catch(error => {
+            console.error("Error:", error);
+        });
+}
+
+fetchAndDisplayMatches();
+fetchAndDisplayLeaderboard();
+
+
+//         fetch("http://localhost:5000/player/update",{
+//             method:"PUT",
+//             headers:{
+//                 "Content-Type":"application/json"
+//             },
+//         body:JSON.stringify(details)})
+
+//         let data = JSON.parse(localStorage.getItem("info")) || [];
+//    data.push(details);
+//     localStorage.setItem("info", JSON.stringify(data));
+//     console.log("Data stored in JSON");
+//     console.log(data);
+//     console.log("Form submitted successfully!");
 
     </script>
         <script src="app.js"></script>
 
-</html>
+</html> 
+
+
+
