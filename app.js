@@ -50,7 +50,23 @@ app.get('/getdata/player', (req, res) => {
         res.json(results);
     });
 });
-
+app.delete('/player/delete', (req, res) => {
+    const { playername } = req.body;
+    if (!playername) {
+        return res.status(400).json({ error: 'Please provide player name' });
+    }
+    const sql = "DELETE FROM players WHERE name = ?";
+    con.query(sql, [playername], function(error, result) {
+        if (error) {
+            console.log('error:', error);
+            return res.status(500).json({ error: 'Database error' });
+        }
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Player not found' });
+        }
+        res.status(200).json({ message: 'Player removed successfully' });
+    });
+});
 app.post('/match', (req, res) => {
     const { playerA, playerB, winner, date } = req.body;
     console.log("Request body:", req.body);
@@ -67,7 +83,7 @@ app.post('/match', (req, res) => {
     });
 });
 
-// GET endpoint to fetch all match results
+// fetch all match results
 app.get('/getdata/match', (req, res) => {
     const sql = "SELECT playerA, playerB, winner, match_date AS date FROM matches";
     con.query(sql, function(error, results) {

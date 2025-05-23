@@ -1,4 +1,3 @@
-<form id="matchForm"></form>
 <html lang="en">
     <head>
     <title>Badminton league</title>
@@ -33,13 +32,12 @@
     <h2>
         Result of a match
     </h2>
-    <section id="section2">
-        <h2>Record a Match Result</h2>
+        <p>Record a Match Result</p>
         <form id="matchForm">
           <input type="text" id="playerAname" placeholder="Player A name" required />
           <input type="text" id="playerBname" placeholder="Player B name" required />
           <input type="text" id="winnerName" placeholder="Winner name" required />
-          <input type="date" id="matchDate" required />
+          <input type="date" id="matchDate" max="" required />
           <button type="submit">Submit Match</button>
         </form>
       </section>
@@ -64,7 +62,10 @@
     const details={
         playername: playerName,
     }
-
+ if (!playerName) {
+        alert("Please enter player name.");
+        return;
+    }
     
     fetch("http://localhost:5000/player", {
         method: "POST",
@@ -178,14 +179,23 @@ document.getElementById("matchForm").addEventListener("submit", function(e) {
     const playerA = document.getElementById("playerAname").value;
     const playerB = document.getElementById("playerBname").value;
     const winner = document.getElementById("winnerName").value;
+    
     const matchDate = document.getElementById("matchDate").value;
     console.log(matchDate)
     const matchDetails = {
         playerA: playerA,
         playerB: playerB,
         winner: winner,
-        date:matchDate
+        date: matchDate
     };
+    if(playerA === playerB) {
+        alert("Player A and Player B must be different.");
+        return;
+    }
+    if (winner !== playerA && winner !== playerB) {
+        alert("Winner name must match either Player A or Player B.");
+        return;
+    }
 
     fetch("http://localhost:5000/match", {
         method: "POST",
@@ -240,10 +250,18 @@ function fetchAndDisplayLeaderboard() {
         .catch(error => {
             console.error("Error:", error);
         });
+        // fetchAndDisplayLeaderboard();
+
 }
 
-fetchAndDisplayMatches();
+document.addEventListener("DOMContentLoaded", () => {
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("matchDate").setAttribute("max", today);
+});
+
 fetchAndDisplayLeaderboard();
+
+fetchAndDisplayMatches();
 
 
 //         fetch("http://localhost:5000/player/update",{
